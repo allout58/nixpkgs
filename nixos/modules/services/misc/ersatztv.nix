@@ -14,7 +14,12 @@ let
     mkOption
     mkPackageOption
     ;
-  inherit (lib.types) str path bool;
+  inherit (lib.types)
+    str
+    path
+    bool
+    int
+    ;
   cfg = config.services.ersatztv;
 in
 {
@@ -60,11 +65,19 @@ in
         '';
       };
 
+      port = mkOption {
+        type = int;
+        default = 8409;
+        description = ''
+          Port to run on
+        '';
+      };
+
       openFirewall = mkOption {
         type = bool;
         default = false;
         description = ''
-          Open the default ports in the firewall for the server.
+          Open the port in the firewall for the server.
         '';
       };
     };
@@ -102,6 +115,7 @@ in
           ETV_CONFIG_FOLDER = cfg.configDir;
           ETV_TRANSCODE_FOLDER = cfg.transcodeDir;
           ETV_BASE_URL = cfg.baseUrl;
+          ASPNETCORE_HTTP_URLS = "http://*:${cfg.port}";
         };
       };
     };
@@ -117,7 +131,7 @@ in
 
     networking.firewall = mkIf cfg.openFirewall {
       # from https://ersatztv.org/docs/user-guide/install#manual-installation-2
-      allowedTCPPorts = [ 8409 ];
+      allowedTCPPorts = [ cfg.port ];
     };
 
   };
